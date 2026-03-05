@@ -4,29 +4,40 @@ import numpy as np
 import io, base64
 from js import document
 
-def calcular_e_plotar(valor_input):
+def calcular_e_plotar(valor_bruto):
     try:
-        n = float(valor_input)
+        # Tenta converter a entrada do usuário para número
+        # O tratamento de erro começa aqui
+        valor_limpo = valor_bruto.replace(',', '.') # Troca vírgula por ponto
+        n = float(valor_limpo)
+        
         if n < 0:
-            return "Erro: O número deve ser positivo| "
+            return "Erro: Não existe raiz quadrada real de número negativo.| "
             
         raiz = math.sqrt(n)
         
-        # Lógica do Gráfico
+        # Criação do Gráfico
         plt.clf()
         plt.figure(figsize=(5,3))
-        x = np.linspace(0, n*1.2 if n > 0 else 10, 100)
+        
+        # Define o alcance do gráfico baseado no número escolhido
+        limite_x = max(n * 1.3, 5)
+        x = np.linspace(0, limite_x, 100)
         y = np.sqrt(x)
         
-        plt.plot(x, y, color='#3498db')
-        plt.scatter([n], [raiz], color='red')
-        plt.grid(True)
+        plt.plot(x, y, color='#3498db', linewidth=2)
+        plt.scatter([n], [raiz], color='#e74c3c', s=50) # Ponto exato
+        plt.title(f"Função Raiz Quadrada (n={n})")
+        plt.grid(True, linestyle='--', alpha=0.7)
         
-        # Converte para Base64
+        # Converte para base64 para o HTML exibir
         buf = io.BytesIO()
-        plt.savefig(buf, format='png')
+        plt.savefig(buf, format='png', bbox_inches='tight')
         img_str = 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('UTF-8')
         
-        return f"A raiz quadrada de {n} é {raiz:.4f}|{img_str}"
+        return f"A raiz de {n} é aproximadamente {raiz:.4f}|{img_str}"
+
+    except ValueError:
+        return "Erro: Por favor, digite um número válido (ex: 144 ou 12.5).| "
     except Exception as e:
-        return f"Erro no processamento: {str(e)}| "
+        return f"Erro inesperado: {str(e)}| "
