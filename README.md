@@ -1,10 +1,5 @@
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Meu Site com Pyodide</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-</head>
-<body>
+
     <h1>Python no Navegador!</h1>
     <p>Resultado do Python: <span id="output">Carregando...</span></p>
 
