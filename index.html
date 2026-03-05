@@ -49,13 +49,12 @@ layout: null
             pyodide = await loadPyodide();
             await pyodide.loadPackage(["matplotlib", "numpy"]);
             
-            // --- O SEGREDO ESTÁ AQUI ---
-            // Faz o download do arquivo .py externo
             const response = await fetch("./processamento.py");
             const pythonCode = await response.text();
-            // Executa o código uma vez para registrar as funções no interpretador
+            
+            
             pyodide.runPython(pythonCode);
-            // ---------------------------
+            
     
             document.getElementById("status-py").innerHTML = "✅ Python carregado do arquivo externo!";
             document.getElementById("controles").style.display = "block";
@@ -65,7 +64,7 @@ layout: null
         async function executarPythonExterno() {
             const valor = document.getElementById("numero").value;
             
-            // Chamamos a função 'calcular_e_plotar' que definimos no arquivo .py
+            
             const funcPython = pyodide.globals.get('calcular_e_plotar');
             const resultado = funcPython(valor);
     
