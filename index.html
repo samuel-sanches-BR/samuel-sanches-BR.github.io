@@ -10,73 +10,134 @@ layout: null
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
-        .card { background: #f9f9f9; border: 1px solid #ddd; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .status { font-style: italic; color: #7f8c8d; margin-bottom: 20px; }
-        input { padding: 10px; border: 2px solid #3498db; border-radius: 5px; width: 100px; font-size: 16px; }
-        button { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        body { font-family: 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; color: #333; background-color: #fcfcfc; }
+        .card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        h1 { color: #2c3e50; margin-top: 0; }
+        
+        /* Estilização da Barra de Progresso */
+        #setup-section { margin: 20px 0; }
+        #progress-container { width: 100%; background: #eee; border-radius: 10px; height: 12px; overflow: hidden; margin-bottom: 8px; }
+        #progress-bar { width: 0%; height: 100%; background: #3498db; transition: width 0.4s ease; }
+        #status-text { font-size: 0.85em; color: #7f8c8d; text-align: center; font-weight: 500; }
+
+        /* Controles */
+        .input-group { display: flex; gap: 10px; margin-top: 20px; }
+        input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+        input:focus { border-color: #3498db; }
+        button { padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         button:hover { background: #2980b9; }
-        button:disabled { background: #bdc3c7; cursor: not-allowed; }
-        #resultado-box { margin-top: 20px; font-size: 1.2em; font-weight: bold; color: #27ae60; }
-        #plot-container { margin-top: 30px; text-align: center; }
-        #plot-container img { max-width: 100%; height: auto; border-radius: 8px; }
+        button:disabled { background: #ccc; }
+
+        /* Mensagens e Gráfico */
+        #resultado-box { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
+        .success { background: #e8f8f5; color: #27ae60; border: 1px solid #27ae60; }
+        .error { background: #fdedec; color: #e74c3c; border: 1px solid #e74c3c; }
+        #plot-container { margin-top: 20px; text-align: center; }
+        #plot-container img { max-width: 100%; height: auto; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>{{ site.title }}</h1>
-    <p>{{ site.description }}</p>
-
     <div class="card">
-        <div id="status-py" class="status">⏳ Inicializando Python (WebAssembly)...</div>
-        
+        <h1>{{ site.title }}</h1>
+        <p>{{ site.description }}</p>
+
+        <div id="setup-section">
+            <div id="progress-container"><div id="progress-bar"></div></div>
+            <div id="status-text">Iniciando...</div>
+        </div>
+
         <div id="controles" style="display:none;">
-            <label for="numero">Digite um número para a raiz:</label>
-            <input type="number" id="numero" value="144">
-            <button id="btn-calcular">Calcular com Python</button>
-            
+            <div class="input-group">
+                <input type="text" id="numero" placeholder="Ex: 144 ou 25.5">
+                <button id="btn-calcular">Calcular Raiz</button>
+            </div>
             <div id="resultado-box"></div>
+            <div id="plot-container"></div>
         </div>
     </div>
 
-    <div id="plot-container"></div>
-
     <script type="text/javascript">
         let pyodide;
-    
-        async function init() {
-            pyodide = await loadPyodide();
-            await pyodide.loadPackage(["matplotlib", "numpy"]);
-            
-            const response = await fetch("./processamento.py");
-            const pythonCode = await response.text();
-            
-            
-            pyodide.runPython(pythonCode);
-            
-    
-            document.getElementById("status-py").innerHTML = "✅ Python carregado do arquivo externo!";
-            document.getElementById("controles").style.display = "block";
-            document.getElementById("btn-calcular").onclick = executarPythonExterno;
+
+        async function updateProgress(pct, msg) {
+            document.getElementById("progress-bar").style.width = pct + "%";
+            document.getElementById("status-text").innerText = msg;
+            // Pequena pausa para a transição visual da barra ser suave
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
-    
-        async function executarPythonExterno() {
-            const valor = document.getElementById("numero").value;
-            
-            
-            const funcPython = pyodide.globals.get('calcular_e_plotar');
-            const resultado = funcPython(valor);
-    
-            const [texto, imgBase64] = resultado.split('|');
-            
-            document.getElementById("resultado-box").innerText = texto;
-            const container = document.getElementById("plot-container");
-            if(imgBase64.trim() !== "") {
-                container.innerHTML = `<img src="${imgBase64}" alt="Gráfico">`;
+
+        async function init() {
+            try {
+                await updateProgress(10, "Conectando ao servidor WebAssembly...");
+                pyodide = await loadPyodide();
+                
+                await updateProgress(30, "Carregando núcleo Python...");
+                await pyodide.loadPackage("micropip"); // Opcional, mas útil
+                
+                await updateProgress(50, "Baixando NumPy...");
+                await pyodide.loadPackage("numpy");
+                
+                await updateProgress(70, "Baixando Matplotlib...");
+                await pyodide.loadPackage("matplotlib");
+                
+                await updateProgress(90, "Lendo arquivo de lógica externa...");
+                const response = await fetch("./processamento.py");
+                if (!response.ok) throw new Error("Não foi possível encontrar o arquivo .py");
+                const pythonCode = await response.text();
+                pyodide.runPython(pythonCode);
+
+                await updateProgress(100, "Tudo pronto!");
+                
+                setTimeout(() => {
+                    document.getElementById("setup-section").style.display = "none";
+                    document.getElementById("controles").style.display = "block";
+                }, 600);
+
+                document.getElementById("btn-calcular").onclick = executar;
+
+            } catch (err) {
+                document.getElementById("status-text").innerHTML = `<b style="color:red">Erro: ${err.message}</b>`;
+                document.getElementById("progress-bar").style.backgroundColor = "#e74c3c";
             }
         }
-    
+
+        async function executar() {
+            const input = document.getElementById("numero").value;
+            const resBox = document.getElementById("resultado-box");
+            const plotDiv = document.getElementById("plot-container");
+            const btn = document.getElementById("btn-calcular");
+
+            // Limpeza inicial
+            resBox.style.display = "none";
+            plotDiv.innerHTML = "";
+            btn.disabled = true;
+
+            try {
+                // Chama a função que está dentro do processamento.py
+                const funcPython = pyodide.globals.get('calcular_e_plotar');
+                const resultadoRaw = funcPython(input);
+
+                // O Python retorna "Mensagem|ImagemBase64"
+                const [msg, imgData] = resultadoRaw.split('|');
+
+                resBox.innerText = msg;
+                resBox.className = msg.startsWith("Erro") ? "error" : "success";
+                resBox.style.display = "block";
+
+                if (imgData && imgData.trim().length > 10) {
+                    plotDiv.innerHTML = `<img src="${imgData}" alt="Gráfico da Raiz">`;
+                }
+
+            } catch (err) {
+                resBox.innerText = "Erro fatal na execução do Python.";
+                resBox.className = "error";
+                resBox.style.display = "block";
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         init();
     </script>
 </body>
