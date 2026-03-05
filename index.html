@@ -60,7 +60,7 @@ layout: null
                 </div>
                 <div class="slider-group">
                     <label>Passos Futuros (N_FUTURE): <span id="val-future" class="val-display">80</span></label>
-                    <input type="range" id="input-future" min="10" max="250" step="10" value="80" oninput="document.getElementById('val-future').innerText = this.value">
+                    <input type="range" id="n_future" min="10" max="250" step="10" value="80" oninput="document.getElementById('val-future').innerText = this.value">
                 </div>
                 <div class="slider-group">
                     <label>Raio Espectral: <span id="val-sr" class="val-display">0.9</span></label>
@@ -122,7 +122,7 @@ layout: null
             const N = document.getElementById("input-n").value;
             const sr = document.getElementById("input-sr").value;
             const alpha = document.getElementById("input-alpha").value;
-            const n_future = document.getElementById("input-future").value;
+            const n_future = document.getElementById("n_future").value;
 
             btn.disabled = true;
             btn.innerText = "Treinando modelo... Aguarde";
@@ -133,7 +133,7 @@ layout: null
             await new Promise(r => setTimeout(r, 50));
 
             try {
-                const resultado = pyodide.runPython(`run_esn_app("${n_res}", "${spec_rad}", "${leak_rate}")`).toString();
+                const resultado = pyodide.runPython(`run_esn_app("${n_res}", "${spec_rad}", "${leak_rate}", "${n_future}")`)`).toString();
                 const [msg, imgData] = resultado.split('|');
 
                 resBox.innerText = msg;
