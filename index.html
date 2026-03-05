@@ -37,10 +37,7 @@ layout: null
         radial-gradient(ellipse 50% 30% at 90% 90%, rgba(255,107,53,0.05) 0%, transparent 60%);
     }
 
-    .wrapper {
-      max-width: 820px;
-      margin: 0 auto;
-    }
+    .wrapper { max-width: 820px; margin: 0 auto; }
 
     /* ── Header ── */
     header {
@@ -71,13 +68,19 @@ layout: null
       max-width: 560px;
       line-height: 1.6;
     }
+    header .updated {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: var(--teal-dim);
+      font-family: var(--mono);
+    }
 
     /* ── Card ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 32px;
+      padding: 28px 32px;
       margin-bottom: 20px;
     }
     .card-title {
@@ -86,12 +89,11 @@ layout: null
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--teal);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     /* ── Loading ── */
     #loading-card { text-align: center; }
-
     .spinner {
       width: 40px; height: 40px;
       border: 3px solid var(--border);
@@ -145,6 +147,104 @@ layout: null
       text-align: left;
     }
 
+    /* ── Equation selector ── */
+    #eq-card { display: none; }
+
+    .eq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media(max-width:520px){ .eq-grid{ grid-template-columns: 1fr; } }
+
+    .eq-option {
+      position: relative;
+      cursor: pointer;
+    }
+    .eq-option input[type=radio] {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+    .eq-box {
+      display: block;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .eq-option input:checked ~ .eq-box {
+      border-color: var(--teal);
+      background: rgba(0,212,170,0.05);
+    }
+    .eq-box .eq-name {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .eq-box .eq-formula {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--teal-dim);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .eq-box .eq-desc {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .eq-indicator {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      margin-right: 6px;
+      vertical-align: middle;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .eq-option input:checked ~ .eq-box .eq-indicator {
+      border-color: var(--teal);
+      background: var(--teal);
+    }
+
+    /* ── Preview card ── */
+    #preview-card { display: none; }
+    #preview-card .card-title { margin-bottom: 12px; }
+
+    .preview-meta {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .preview-meta span { color: var(--teal); }
+
+    #preview-img { width: 100%; border-radius: 10px; border: 1px solid var(--border); }
+
+    #preview-loading {
+      text-align: center;
+      padding: 30px 0;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    #preview-loading .mini-spin {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
     /* ── Controls ── */
     #controls-card { display: none; }
 
@@ -172,12 +272,10 @@ layout: null
 
     input[type=range] {
       -webkit-appearance: none;
-      width: 100%;
-      height: 4px;
+      width: 100%; height: 4px;
       background: var(--border);
       border-radius: 2px;
-      outline: none;
-      cursor: pointer;
+      outline: none; cursor: pointer;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -194,12 +292,7 @@ layout: null
       border: 2px solid var(--bg);
     }
 
-    .hint {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 6px;
-      line-height: 1.4;
-    }
+    .hint { font-size: 0.72rem; color: var(--muted); margin-top: 6px; line-height: 1.4; }
 
     .btn {
       grid-column: span 2;
@@ -221,60 +314,11 @@ layout: null
       box-shadow: 0 0 20px rgba(0,212,170,0.35);
       transform: translateY(-1px);
     }
-    .btn:disabled {
-      background: var(--teal-dim);
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn:disabled { background: var(--teal-dim); cursor: not-allowed; transform: none; }
     @media(max-width:560px){ .btn{ grid-column: span 1; } }
-
-    /* ── Result ── */
-    #result-card { display: none; }
-
-    #result-msg {
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      color: var(--teal);
-      padding: 14px 18px;
-      background: rgba(0,212,170,0.06);
-      border: 1px solid rgba(0,212,170,0.2);
-      border-radius: 10px;
-      margin-bottom: 24px;
-    }
-    #result-msg.err {
-      color: var(--orange);
-      background: rgba(255,107,53,0.06);
-      border-color: rgba(255,107,53,0.2);
-    }
-
-    #plot-area img {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-
-    #running-msg {
-      display: none;
-      text-align: center;
-      padding: 20px 0;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-    #running-msg .mini-spin {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid var(--border);
-      border-top-color: var(--teal);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
-    }
 
     /* ── History ── */
     #history-card { display: none; }
-
     .history-header {
       display: flex;
       justify-content: space-between;
@@ -294,12 +338,7 @@ layout: null
     }
     .btn-clear:hover { color: var(--orange); border-color: var(--orange); }
 
-    .history-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--mono);
-      font-size: 0.75rem;
-    }
+    .history-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.75rem; }
     .history-table th {
       text-align: left;
       padding: 8px 12px;
@@ -313,11 +352,8 @@ layout: null
       padding: 10px 12px;
       border-bottom: 1px solid rgba(30,45,69,0.5);
       color: var(--text);
-      transition: background 0.15s;
     }
     .history-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-    /* melhor resultado */
     .history-table tr.best td { background: rgba(0,212,170,0.05); }
     .history-table tr.best td.nrmse-val { color: var(--teal); font-weight: 700; }
 
@@ -333,19 +369,8 @@ layout: null
     .badge-best  { background: rgba(0,212,170,0.15); color: var(--teal); }
     .badge-worst { background: rgba(255,107,53,0.12); color: var(--orange); }
 
-    /* mini bar de NRMSE */
-    .nrmse-bar-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .nrmse-bar {
-      height: 4px;
-      border-radius: 2px;
-      background: var(--teal-dim);
-      flex-shrink: 0;
-      transition: width 0.4s ease;
-    }
+    .nrmse-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .nrmse-bar { height: 4px; border-radius: 2px; background: var(--teal-dim); flex-shrink: 0; }
     tr.best .nrmse-bar { background: var(--teal); }
 
     @keyframes rowIn {
@@ -353,6 +378,40 @@ layout: null
       to   { opacity: 1; transform: translateY(0); }
     }
     .history-table tbody tr { animation: rowIn 0.3s ease forwards; }
+
+    /* ── Result ── */
+    #result-card { display: none; }
+    #result-msg {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--teal);
+      padding: 14px 18px;
+      background: rgba(0,212,170,0.06);
+      border: 1px solid rgba(0,212,170,0.2);
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    #result-msg.err { color: var(--orange); background: rgba(255,107,53,0.06); border-color: rgba(255,107,53,0.2); }
+    #plot-area img { width: 100%; border-radius: 10px; border: 1px solid var(--border); }
+
+    #running-msg {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    #running-msg .mini-spin {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
@@ -361,13 +420,11 @@ layout: null
   <header>
     <div class="label">Redes Neurais · Séries Temporais Caóticas</div>
     <h1>Reservoir Computing<br>Echo State Network</h1>
-    <p>Ajuste os hiperparâmetros da ESN e treine um modelo para prever a série caótica de Mackey-Glass. Todo o processamento roda no seu navegador via WebAssembly.</p>
-    <p style="margin-top:14px; font-size:0.75rem; color: var(--teal-dim); font-family: var(--mono);">
-      última atualização: {{ site.time | date: "%d/%m/%Y" }}
-    </p>
+    <p>Escolha uma equação caótica, visualize os dados, ajuste os hiperparâmetros e treine. Todo o processamento roda no seu navegador via WebAssembly.</p>
+    <p class="updated">última atualização: {{ site.time | date: "%d/%m/%Y" }}</p>
   </header>
 
-  <!-- Bloco de Carregamento -->
+  <!-- Carregamento -->
   <div class="card" id="loading-card">
     <div class="spinner"></div>
     <ul id="step-list">
@@ -379,9 +436,47 @@ layout: null
     <div id="error-msg"></div>
   </div>
 
+  <!-- Seletor de equação -->
+  <div class="card" id="eq-card">
+    <div class="card-title">// 1. Escolha a Equação Caótica</div>
+    <div class="eq-grid">
+
+      <label class="eq-option">
+        <input type="radio" name="equation" value="mackey_glass" checked onchange="onEqChange()">
+        <span class="eq-box">
+          <div class="eq-name"><span class="eq-indicator"></span>Mackey-Glass</div>
+          <div class="eq-formula">dx/dt = β·x(t-τ)/(1+x(t-τ)ⁿ) − γ·x(t)</div>
+          <div class="eq-desc">Equação diferencial com atraso (DDE). Caótica para τ=17. Benchmark clássico de RC.</div>
+        </span>
+      </label>
+
+      <label class="eq-option">
+        <input type="radio" name="equation" value="lorenz" onchange="onEqChange()">
+        <span class="eq-box">
+          <div class="eq-name"><span class="eq-indicator"></span>Lorenz</div>
+          <div class="eq-formula">ẋ=σ(y−x)  ẏ=x(ρ−z)−y  ż=xy−βz</div>
+          <div class="eq-desc">Sistema 3D com atrator borboleta. Componente x usada como série temporal escalar.</div>
+        </span>
+      </label>
+
+    </div>
+  </div>
+
+  <!-- Preview dos dados -->
+  <div class="card" id="preview-card">
+    <div class="card-title">// 2. Visualização dos Dados</div>
+    <div class="preview-meta">
+      Amostras totais: <span>1500</span> &nbsp;·&nbsp;
+      Split treino/teste: <span>1000 / 500</span> &nbsp;·&nbsp;
+      Equação: <span id="eq-label-preview">Mackey-Glass</span>
+    </div>
+    <div id="preview-loading"><span class="mini-spin"></span>Gerando visualização...</div>
+    <img id="preview-img" style="display:none">
+  </div>
+
   <!-- Controles -->
   <div class="card" id="controls-card">
-    <div class="card-title">// Hiperparâmetros</div>
+    <div class="card-title">// 3. Hiperparâmetros da ESN</div>
     <div class="grid">
 
       <div class="slider-group">
@@ -399,7 +494,7 @@ layout: null
       </div>
 
       <div class="slider-group">
-        <label>Taxa de Vazamento (α) <span class="val" id="v-leak">0.3</span></label>
+        <label>Taxa de Vazamento (α) <span class="val" id="v-leak">0.30</span></label>
         <input type="range" id="leaking_rate" min="0.1" max="1.0" step="0.05" value="0.3"
                oninput="document.getElementById('v-leak').textContent=parseFloat(this.value).toFixed(2)">
         <p class="hint">α baixo = memória longa. α = 1 = sem integração.</p>
@@ -416,7 +511,7 @@ layout: null
     </div>
   </div>
 
-  <!-- Histórico de Resultados -->
+  <!-- Histórico -->
   <div class="card" id="history-card">
     <div class="history-header">
       <div class="card-title" style="margin-bottom:0">// Histórico de Execuções</div>
@@ -426,6 +521,7 @@ layout: null
       <thead>
         <tr>
           <th>#</th>
+          <th>Equação</th>
           <th>Neurônios</th>
           <th>Raio Esp.</th>
           <th>Leak (α)</th>
@@ -441,68 +537,19 @@ layout: null
   <div class="card" id="result-card">
     <div class="card-title">// Resultado</div>
     <div id="running-msg"><span class="mini-spin"></span>Treinando rede neural...</div>
-    <div id="result-msg"></div>
+    <div id="result-msg" style="display:none"></div>
     <div id="plot-area"></div>
   </div>
 
 </div>
-
 <script>
-  // ── Histórico (somente em memória — limpa ao recarregar) ──────────────────
+  // ── Estado global ───────────────────────────────────────────────────────────
+  let _pyodide = null;
   let _history = [];
 
-  function clearHistory() {
-    _history = [];
-    renderHistory([]);
-    document.getElementById('history-card').style.display = 'none';
-  }
+  // ── Utilitários loading ────────────────────────────────────────────────────
+  function step(id, state) { document.getElementById(id).className = state; }
 
-  function addToHistory(entry) {
-    _history.unshift(entry);    // mais recente no topo
-    renderHistory(_history);
-  }
-
-  function renderHistory(h) {
-    const card = document.getElementById('history-card');
-    const tbody = document.getElementById('history-tbody');
-    if (!h.length) { card.style.display = 'none'; return; }
-
-    card.style.display = 'block';
-
-    const nrmseValues = h.map(r => r.nrmse);
-    const bestNrmse  = Math.min(...nrmseValues);
-    const worstNrmse = Math.max(...nrmseValues);
-    const maxBar     = worstNrmse > 0 ? worstNrmse : 1;
-
-    tbody.innerHTML = h.map((r, i) => {
-      const isBest  = r.nrmse === bestNrmse;
-      const isWorst = r.nrmse === worstNrmse && h.length > 1;
-      const barPct  = Math.round((r.nrmse / maxBar) * 120);  // max ~120px
-
-      const badge = isBest
-        ? '<span class="badge badge-best">melhor</span>'
-        : isWorst ? '<span class="badge badge-worst">pior</span>' : '';
-
-      return `<tr class="${isBest ? 'best' : ''}">
-        <td>${h.length - i}</td>
-        <td>${r.neurons}</td>
-        <td>${r.sr}</td>
-        <td>${r.leak}</td>
-        <td>${r.future} pts</td>
-        <td class="nrmse-val">
-          <div class="nrmse-bar-wrap">
-            <div class="nrmse-bar" style="width:${barPct}px"></div>
-            ${r.nrmse.toFixed(4)}${badge}
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
-  }
-
-  // ── Utilitários de loading ─────────────────────────────────────────────────
-  function step(id, state) {
-    document.getElementById(id).className = state;
-  }
   function showError(msg) {
     const box = document.getElementById('error-msg');
     box.style.display = 'block';
@@ -510,7 +557,93 @@ layout: null
     document.querySelector('.spinner').style.display = 'none';
   }
 
-  // ── Inicialização ──────────────────────────────────────────────────────────
+  // ── Seletor de equação ─────────────────────────────────────────────────────
+  function getEquation() {
+    return document.querySelector('input[name="equation"]:checked').value;
+  }
+
+  async function onEqChange() {
+    if (!_pyodide) return;
+    const eq = getEquation();
+    document.getElementById('eq-label-preview').textContent =
+      eq === 'lorenz' ? 'Lorenz' : 'Mackey-Glass';
+    await updatePreview(eq);
+  }
+
+  // ── Preview ────────────────────────────────────────────────────────────────
+  async function updatePreview(equation) {
+    const card      = document.getElementById('preview-card');
+    const loadingEl = document.getElementById('preview-loading');
+    const img       = document.getElementById('preview-img');
+
+    card.style.display = 'block';
+    loadingEl.style.display = 'block';
+    img.style.display = 'none';
+
+    await new Promise(r => setTimeout(r, 40));
+
+    try {
+      const result = _pyodide.runPython(`preview_data("${equation}")`).toString();
+      if (result.startsWith('ERRO')) {
+        loadingEl.textContent = '✗ Erro ao gerar preview: ' + result.split('|')[1];
+      } else {
+        img.src = result;
+        img.style.display = 'block';
+        loadingEl.style.display = 'none';
+      }
+    } catch(e) {
+      loadingEl.textContent = '✗ ' + e.message;
+    }
+  }
+
+  // ── Histórico (em memória) ─────────────────────────────────────────────────
+  function clearHistory() {
+    _history = [];
+    document.getElementById('history-card').style.display = 'none';
+  }
+
+  function addToHistory(entry) {
+    _history.unshift(entry);
+    renderHistory(_history);
+  }
+
+  function renderHistory(h) {
+    const card  = document.getElementById('history-card');
+    const tbody = document.getElementById('history-tbody');
+    if (!h.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+
+    const vals     = h.map(r => r.nrmse);
+    const best     = Math.min(...vals);
+    const worst    = Math.max(...vals);
+    const maxBar   = worst > 0 ? worst : 1;
+
+    tbody.innerHTML = h.map((r, i) => {
+      const isBest  = r.nrmse === best;
+      const isWorst = r.nrmse === worst && h.length > 1;
+      const barW    = Math.round((r.nrmse / maxBar) * 100);
+      const badge   = isBest
+        ? '<span class="badge badge-best">melhor</span>'
+        : isWorst ? '<span class="badge badge-worst">pior</span>' : '';
+
+      return `<tr class="${isBest ? 'best' : ''}">
+        <td>${h.length - i}</td>
+        <td>${r.equation}</td>
+        <td>${r.neurons}</td>
+        <td>${r.sr}</td>
+        <td>${r.leak}</td>
+        <td>${r.future} pts</td>
+        <td class="nrmse-val">
+          <div class="nrmse-bar-wrap">
+            <div class="nrmse-bar" style="width:${barW}px"></div>
+            ${r.nrmse.toFixed(4)}${badge}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
   async function init() {
     if (typeof loadPyodide === 'undefined') {
       showError('Falha ao carregar o Pyodide. Verifique sua conexão e recarregue a página.');
@@ -518,38 +651,43 @@ layout: null
     }
     try {
       step('s1', 'active');
-      const pyodide = await loadPyodide();
+      _pyodide = await loadPyodide();
       step('s1', 'done');
 
       step('s2', 'active');
-      await pyodide.loadPackage(['numpy', 'matplotlib']);
+      await _pyodide.loadPackage(['numpy', 'matplotlib']);
       step('s2', 'done');
 
       step('s3', 'active');
-      await pyodide.loadPackage(['scikit-learn']);
+      await _pyodide.loadPackage(['scikit-learn']);
       step('s3', 'done');
 
       step('s4', 'active');
       const res = await fetch('./processamento.py');
       if (!res.ok) throw new Error('processamento.py não encontrado (HTTP ' + res.status + ')');
-      pyodide.runPython(await res.text());
+      _pyodide.runPython(await res.text());
       step('s4', 'done');
 
-      document.getElementById('loading-card').style.display = 'none';
+      // Exibe blocos
+      document.getElementById('loading-card').style.display  = 'none';
+      document.getElementById('eq-card').style.display       = 'block';
       document.getElementById('controls-card').style.display = 'block';
 
-      document.getElementById('btn-run').addEventListener('click', () => run(pyodide));
-    } catch (e) {
-      showError(e.message);
-    }
+      // Preview inicial
+      await updatePreview(getEquation());
+
+      document.getElementById('btn-run').addEventListener('click', runModel);
+
+    } catch(e) { showError(e.message); }
   }
 
-  // ── Execução do modelo ─────────────────────────────────────────────────────
-  async function run(pyodide) {
+  // ── Treino ─────────────────────────────────────────────────────────────────
+  async function runModel() {
     const n_res    = document.getElementById('n_reservoir').value;
     const sr       = document.getElementById('spectral_radius').value;
     const leak     = document.getElementById('leaking_rate').value;
     const n_future = document.getElementById('n_future').value;
+    const equation = getEquation();
 
     const btn       = document.getElementById('btn-run');
     const card      = document.getElementById('result-card');
@@ -567,8 +705,8 @@ layout: null
     await new Promise(r => setTimeout(r, 60));
 
     try {
-      const resultado = pyodide.runPython(
-        `run_esn_app("${n_res}", "${sr}", "${leak}", "${n_future}")`
+      const resultado = _pyodide.runPython(
+        `run_esn_app("${n_res}", "${sr}", "${leak}", "${n_future}", "${equation}")`
       ).toString();
 
       const sep = resultado.indexOf('|');
@@ -581,17 +719,16 @@ layout: null
       const isErr = msg.startsWith('Erro');
       msgEl.className = isErr ? 'err' : '';
 
-      // Extrai NRMSE da mensagem e salva no histórico
       if (!isErr) {
         const match = msg.match(/NRMSE:\s*([\d.]+)/);
         if (match) {
           addToHistory({
+            equation: equation === 'lorenz' ? 'Lorenz' : 'Mackey-Glass',
             neurons : parseInt(n_res),
             sr      : parseFloat(sr).toFixed(2),
             leak    : parseFloat(leak).toFixed(2),
             future  : parseInt(n_future),
             nrmse   : parseFloat(match[1]),
-            ts      : Date.now()
           });
         }
       }
@@ -602,7 +739,7 @@ layout: null
         plotEl.appendChild(image);
       }
 
-    } catch (e) {
+    } catch(e) {
       runningEl.style.display = 'none';
       msgEl.style.display = 'block';
       msgEl.textContent = 'Erro fatal: ' + e.message;
@@ -613,13 +750,13 @@ layout: null
     }
   }
 
-  // ── Bootstrap ─────────────────────────────────────────────────────────────
+  // ── Bootstrap ──────────────────────────────────────────────────────────────
   window.addEventListener('load', () => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js';
-    script.onload = () => init();
-    script.onerror = () => showError('Não foi possível baixar o Pyodide. Verifique sua conexão.');
-    document.head.appendChild(script);
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js';
+    s.onload  = () => init();
+    s.onerror = () => showError('Não foi possível baixar o Pyodide. Verifique sua conexão.');
+    document.head.appendChild(s);
   });
 </script>
 </body>
