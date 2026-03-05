@@ -10,30 +10,34 @@ layout: null
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; color: #333; background-color: #fcfcfc; }
-        .card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        h1 { color: #2c3e50; margin-top: 0; }
+        body { font-family: 'Segoe UI', sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; color: #333; background-color: #f4f7f6; }
+        .card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 1px solid #eee; }
+        h1 { color: #2c3e50; margin-top: 0; font-size: 1.8em; }
         
-        /* Estilização da Barra de Progresso */
+        /* Barra de Progresso Refinada */
         #setup-section { margin: 20px 0; }
-        #progress-container { width: 100%; background: #eee; border-radius: 10px; height: 12px; overflow: hidden; margin-bottom: 8px; }
-        #progress-bar { width: 0%; height: 100%; background: #3498db; transition: width 0.4s ease; }
-        #status-text { font-size: 0.85em; color: #7f8c8d; text-align: center; font-weight: 500; }
+        #progress-container { width: 100%; background: #e0e0e0; border-radius: 10px; height: 10px; overflow: hidden; margin-bottom: 8px; }
+        #progress-bar { width: 0%; height: 100%; background: #27ae60; transition: width 0.3s ease; }
+        #status-text { font-size: 0.85em; color: #7f8c8d; text-align: center; }
 
-        /* Controles */
-        .input-group { display: flex; gap: 10px; margin-top: 20px; }
-        input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
-        input:focus { border-color: #3498db; }
-        button { padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #2980b9; }
-        button:disabled { background: #ccc; }
+        /* Interface Principal */
+        .input-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        input { flex: 1; min-width: 200px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        input:focus { border-color: #3498db; outline: none; }
+        
+        .btn-main { padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; flex-grow: 1; }
+        .btn-main:hover { background: #2980b9; }
+        .btn-main:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* Mensagens e Gráfico */
-        #resultado-box { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
+        #btn-download { display: none; margin-top: 15px; width: 100%; padding: 10px; background: #2ecc71; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #btn-download:hover { background: #27ae60; }
+
+        /* Alertas e Gráfico */
+        #resultado-box { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; font-weight: 500; }
         .success { background: #e8f8f5; color: #27ae60; border: 1px solid #27ae60; }
         .error { background: #fdedec; color: #e74c3c; border: 1px solid #e74c3c; }
-        #plot-container { margin-top: 20px; text-align: center; }
-        #plot-container img { max-width: 100%; height: auto; border-radius: 10px; }
+        #plot-container { margin-top: 20px; text-align: center; min-height: 200px; }
+        #plot-container img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -44,98 +48,111 @@ layout: null
 
         <div id="setup-section">
             <div id="progress-container"><div id="progress-bar"></div></div>
-            <div id="status-text">Iniciando...</div>
+            <div id="status-text">Iniciando sistema...</div>
         </div>
 
         <div id="controles" style="display:none;">
             <div class="input-group">
-                <input type="text" id="numero" placeholder="Ex: 144 ou 25.5">
-                <button id="btn-calcular">Calcular Raiz</button>
+                <input type="text" id="numero" placeholder="Ex: 144 ou 12,5" autocomplete="off">
+                <button id="btn-calcular" class="btn-main">Calcular e Gerar Gráfico</button>
             </div>
+            
             <div id="resultado-box"></div>
+            
             <div id="plot-container"></div>
+            <button id="btn-download">💾 Baixar Imagem do Gráfico</button>
         </div>
     </div>
 
     <script type="text/javascript">
         let pyodide;
+        let ultimaImagem = "";
 
         async function updateProgress(pct, msg) {
             document.getElementById("progress-bar").style.width = pct + "%";
             document.getElementById("status-text").innerText = msg;
-            // Pequena pausa para a transição visual da barra ser suave
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(r => setTimeout(r, 150));
         }
 
         async function init() {
             try {
-                await updateProgress(10, "Conectando ao servidor WebAssembly...");
+                await updateProgress(10, "Conectando ao WebAssembly...");
                 pyodide = await loadPyodide();
                 
-                await updateProgress(30, "Carregando núcleo Python...");
-                await pyodide.loadPackage("micropip"); // Opcional, mas útil
-                
-                await updateProgress(50, "Baixando NumPy...");
+                await updateProgress(30, "Carregando interpretador Python...");
                 await pyodide.loadPackage("numpy");
                 
-                await updateProgress(70, "Baixando Matplotlib...");
+                await updateProgress(60, "Carregando Matplotlib (biblioteca gráfica)...");
                 await pyodide.loadPackage("matplotlib");
                 
-                await updateProgress(90, "Lendo arquivo de lógica externa...");
+                await updateProgress(85, "Sincronizando processamento.py...");
                 const response = await fetch("./processamento.py");
-                if (!response.ok) throw new Error("Não foi possível encontrar o arquivo .py");
                 const pythonCode = await response.text();
                 pyodide.runPython(pythonCode);
 
-                await updateProgress(100, "Tudo pronto!");
+                await updateProgress(100, "Pronto!");
                 
                 setTimeout(() => {
                     document.getElementById("setup-section").style.display = "none";
                     document.getElementById("controles").style.display = "block";
-                }, 600);
+                }, 500);
 
                 document.getElementById("btn-calcular").onclick = executar;
+                document.getElementById("btn-download").onclick = baixarImagem;
 
             } catch (err) {
-                document.getElementById("status-text").innerHTML = `<b style="color:red">Erro: ${err.message}</b>`;
-                document.getElementById("progress-bar").style.backgroundColor = "#e74c3c";
+                document.getElementById("status-text").innerHTML = `<b style="color:red">Erro ao iniciar: ${err.message}</b>`;
             }
         }
 
         async function executar() {
-            const input = document.getElementById("numero").value;
+            // Pegamos o valor e já trocamos a vírgula por ponto no JS para evitar erros básicos
+            let inputRaw = document.getElementById("numero").value;
+            let inputTratado = inputRaw.replace(',', '.'); 
+            
             const resBox = document.getElementById("resultado-box");
             const plotDiv = document.getElementById("plot-container");
-            const btn = document.getElementById("btn-calcular");
+            const btnDl = document.getElementById("btn-download");
+            const btnCalc = document.getElementById("btn-calcular");
 
-            // Limpeza inicial
             resBox.style.display = "none";
-            plotDiv.innerHTML = "";
-            btn.disabled = true;
+            btnCalc.disabled = true;
+            btnCalc.innerText = "Processando no Python...";
 
             try {
-                // Chama a função que está dentro do processamento.py
                 const funcPython = pyodide.globals.get('calcular_e_plotar');
-                const resultadoRaw = funcPython(input);
-
-                // O Python retorna "Mensagem|ImagemBase64"
-                const [msg, imgData] = resultadoRaw.split('|');
+                const resultado = funcPython(inputTratado);
+                const [msg, imgData] = resultado.split('|');
 
                 resBox.innerText = msg;
                 resBox.className = msg.startsWith("Erro") ? "error" : "success";
                 resBox.style.display = "block";
 
-                if (imgData && imgData.trim().length > 10) {
-                    plotDiv.innerHTML = `<img src="${imgData}" alt="Gráfico da Raiz">`;
+                if (imgData && imgData.length > 50) {
+                    ultimaImagem = imgData;
+                    plotDiv.innerHTML = `<img src="${imgData}" id="grafico-res">`;
+                    btnDl.style.display = "block";
+                } else {
+                    plotDiv.innerHTML = "";
+                    btnDl.style.display = "none";
                 }
 
             } catch (err) {
-                resBox.innerText = "Erro fatal na execução do Python.";
+                resBox.innerText = "Erro interno: " + err.message;
                 resBox.className = "error";
                 resBox.style.display = "block";
             } finally {
-                btn.disabled = false;
+                btnCalc.disabled = false;
+                btnCalc.innerText = "Calcular e Gerar Gráfico";
             }
+        }
+
+        function baixarImagem() {
+            if (!ultimaImagem) return;
+            const link = document.createElement('a');
+            link.href = ultimaImagem;
+            link.download = 'meu_grafico_python.png';
+            link.click();
         }
 
         init();
