@@ -55,19 +55,19 @@ layout: null
         <div id="controles" style="display:none;" class="animate-in">
             <div class="controls-grid">
                 <div class="slider-group">
-                    <label>Neurônios ($N$): <span id="val-n" class="val-display">200</span></label>
+                    <label>Neurônios ($N$): <span id="n_res" class="val-display">200</span></label>
                     <input type="range" id="input-n" min="50" max="800" step="50" value="200" oninput="document.getElementById('val-n').innerText = this.value">
                 </div>
                 <div class="slider-group">
-                    <label>Passos Futuros (N_FUTURE): <span id="val-future" class="val-display">80</span></label>
+                    <label>Passos Futuros (N_FUTURE): <span id="n_future" class="val-display">80</span></label>
                     <input type="range" id="n_future" min="10" max="250" step="10" value="80" oninput="document.getElementById('val-future').innerText = this.value">
                 </div>
                 <div class="slider-group">
-                    <label>Raio Espectral: <span id="val-sr" class="val-display">0.9</span></label>
+                    <label>Raio Espectral: <span id="spec_rad" class="val-display">0.9</span></label>
                     <input type="range" id="input-sr" min="0.1" max="1.5" step="0.1" value="0.9" oninput="document.getElementById('val-sr').innerText = this.value">
                 </div>
                 <div class="slider-group">
-                    <label>Taxa de Vazamento ($\alpha$): <span id="val-alpha" class="val-display">0.3</span></label>
+                    <label>Taxa de Vazamento ($\alpha$): <span id="leak_rate" class="val-display">0.3</span></label>
                     <input type="range" id="input-alpha" min="0.1" max="1.0" step="0.1" value="0.3" oninput="document.getElementById('val-alpha').innerText = this.value">
                 </div>
                 
