@@ -5,70 +5,118 @@ layout: null
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Meu App Python</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site.title }}</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
-        #loading { color: #666; background: #f4f4f4; padding: 10px; border-radius: 5px; }
-        #plot-container img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; margin-top: 20px; }
-        .resultado { font-weight: bold; color: #2c3e50; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+        .card { background: #f9f9f9; border: 1px solid #ddd; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .status { font-style: italic; color: #7f8c8d; margin-bottom: 20px; }
+        input { padding: 10px; border: 2px solid #3498db; border-radius: 5px; width: 100px; font-size: 16px; }
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #2980b9; }
+        button:disabled { background: #bdc3c7; cursor: not-allowed; }
+        #resultado-box { margin-top: 20px; font-size: 1.2em; font-weight: bold; color: #27ae60; }
+        #plot-container { margin-top: 30px; text-align: center; }
+        #plot-container img { max-width: 100%; height: auto; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <h1>Executando Python com Pyodide</h1>
-    
-    <div id="loading">⏳ Preparando interpretador Python e bibliotecas...</div>
-    
-    <p>Cálculo matemático: <span id="output" class="resultado">Aguardando...</span></p>
-    
+    <h1>{{ site.title }}</h1>
+    <p>{{ site.description }}</p>
+
+    <div class="card">
+        <div id="status-py" class="status">⏳ Inicializando Python (WebAssembly)...</div>
+        
+        <div id="controles" style="display:none;">
+            <label for="numero">Digite um número para a raiz:</label>
+            <input type="number" id="numero" value="144">
+            <button id="btn-calcular">Calcular com Python</button>
+            
+            <div id="resultado-box"></div>
+        </div>
+    </div>
+
     <div id="plot-container"></div>
 
     <script type="text/javascript">
-      async function iniciarTudo() {
-        // 1. Inicializa o Pyodide apenas UMA vez
-        let pyodide = await loadPyodide();
-        
-        // 2. Carrega pacotes necessários
-        await pyodide.loadPackage(["matplotlib", "numpy"]);
-        
-        // 3. Executa cálculo simples
-        let calculo = await pyodide.runPythonAsync(`
-            import math
-            f"A raiz quadrada de 144 é {math.sqrt(144)}"
-        `);
-        document.getElementById("output").innerText = calculo;
+        let pyodide;
 
-        // 4. Gera o Gráfico
-        await pyodide.runPythonAsync(`
-            import matplotlib.pyplot as plt
-            import numpy as np
-            import io, base64
-            from js import document
-
-            x = np.linspace(0, 10, 100)
-            y = np.sin(x)
-
-            plt.figure(figsize=(6,4))
-            plt.plot(x, y, label='Seno(x)', color='#3498db')
-            plt.title('Gráfico em Tempo Real')
-            plt.grid(True)
+        async function init() {
+            // Inicializa o interpretador
+            pyodide = await loadPyodide();
             
-            # Converte para base64
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png')
-            img_str = 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('UTF-8')
+            // Carrega pacotes para o gráfico (opcional, mas legal)
+            await pyodide.loadPackage(["matplotlib", "numpy"]);
             
-            img_tag = document.createElement('img')
-            img_tag.src = img_str
-            document.getElementById('plot-container').appendChild(img_tag)
-        `);
+            // Libera a interface
+            document.getElementById("status-py").innerHTML = "✅ Python pronto para uso!";
+            document.getElementById("controles").style.display = "block";
+            
+            // Configura o evento do botão
+            document.getElementById("btn-calcular").onclick = calcularRaiz;
+        }
 
-        // Esconde o aviso de carregamento
-        document.getElementById("loading").style.display = "none";
-      }
+        async function calcularRaiz() {
+            const valor = document.getElementById("numero").value;
+            const btn = document.getElementById("btn-calcular");
+            
+            btn.disabled = true;
+            btn.innerText = "Processando...";
 
-      iniciarTudo();
+            try {
+                // Executa código Python passando a variável do JS para o Python
+                const resultado = await pyodide.runPythonAsync(`
+                    import math
+                    import matplotlib.pyplot as plt
+                    import numpy as np
+                    import io, base64
+                    from js import document
+
+                    n = ${valor}
+                    raiz = math.sqrt(n)
+                    
+                    # Gera um gráfico simples do ponto da raiz
+                    plt.clf() # Limpa o gráfico anterior
+                    x = np.linspace(0, n*1.2 if n > 0 else 10, 100)
+                    y = np.sqrt(x)
+                    
+                    plt.figure(figsize=(5,3))
+                    plt.plot(x, y, color='#3498db', label='y = sqrt(x)')
+                    plt.scatter([n], [raiz], color='red') # Ponto da escolha
+                    plt.annotate(f'Raiz: {raiz:.2f}', (n, raiz), xytext=(n, raiz+0.5))
+                    plt.grid(True)
+                    
+                    # Converte gráfico para HTML
+                    buf = io.BytesIO()
+                    plt.savefig(buf, format='png')
+                    img_str = 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('UTF-8')
+                    
+                    # Retorna o texto para o JS
+                    f"A raiz quadrada de {n} é {raiz:.4f}|{img_str}"
+                `);
+
+                // Separa o texto da imagem
+                const [texto, imgBase64] = resultado.split('|');
+                
+                document.getElementById("resultado-box").innerText = texto;
+                
+                // Atualiza a imagem do gráfico
+                const container = document.getElementById("plot-container");
+                container.innerHTML = `<img src="${imgBase64}" alt="Gráfico da raiz">`;
+
+            } catch (err) {
+                document.getElementById("resultado-box").innerText = "Erro: Digite um número positivo.";
+            }
+
+            btn.disabled = false;
+            btn.innerText = "Calcular com Python";
+        }
+
+        init();
     </script>
 </body>
 </html>
