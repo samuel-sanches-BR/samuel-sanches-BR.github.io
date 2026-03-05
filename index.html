@@ -133,8 +133,7 @@ layout: null
             await new Promise(r => setTimeout(r, 50));
 
             try {
-                const func = pyodide.globals.get('rodar_esn');
-                const resultado = func(N, sr, alpha, n_future);
+                const resultado = pyodide.runPython(`run_esn_app("${n_res}", "${spec_rad}", "${leak_rate}")`).toString();
                 const [msg, imgData] = resultado.split('|');
 
                 resBox.innerText = msg;
