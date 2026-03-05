@@ -1,5 +1,6 @@
 <html lang="pt-br">
 
+<body>
     <h1>Python no Navegador!</h1>
     <p>Resultado do Python: <span id="output">Carregando...</span></p>
 
