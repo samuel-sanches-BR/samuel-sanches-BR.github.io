@@ -44,78 +44,40 @@ layout: null
 
     <script type="text/javascript">
         let pyodide;
-
+    
         async function init() {
-            // Inicializa o interpretador
             pyodide = await loadPyodide();
-            
-            // Carrega pacotes para o gráfico (opcional, mas legal)
             await pyodide.loadPackage(["matplotlib", "numpy"]);
             
-            // Libera a interface
-            document.getElementById("status-py").innerHTML = "✅ Python pronto para uso!";
+            // --- O SEGREDO ESTÁ AQUI ---
+            // Faz o download do arquivo .py externo
+            const response = await fetch("./processamento.py");
+            const pythonCode = await response.text();
+            // Executa o código uma vez para registrar as funções no interpretador
+            pyodide.runPython(pythonCode);
+            // ---------------------------
+    
+            document.getElementById("status-py").innerHTML = "✅ Python carregado do arquivo externo!";
             document.getElementById("controles").style.display = "block";
-            
-            // Configura o evento do botão
-            document.getElementById("btn-calcular").onclick = calcularRaiz;
+            document.getElementById("btn-calcular").onclick = executarPythonExterno;
         }
-
-        async function calcularRaiz() {
+    
+        async function executarPythonExterno() {
             const valor = document.getElementById("numero").value;
-            const btn = document.getElementById("btn-calcular");
             
-            btn.disabled = true;
-            btn.innerText = "Processando...";
-
-            try {
-                // Executa código Python passando a variável do JS para o Python
-                const resultado = await pyodide.runPythonAsync(`
-                    import math
-                    import matplotlib.pyplot as plt
-                    import numpy as np
-                    import io, base64
-                    from js import document
-
-                    n = ${valor}
-                    raiz = math.sqrt(n)
-                    
-                    # Gera um gráfico simples do ponto da raiz
-                    plt.clf() # Limpa o gráfico anterior
-                    x = np.linspace(0, n*1.2 if n > 0 else 10, 100)
-                    y = np.sqrt(x)
-                    
-                    plt.figure(figsize=(5,3))
-                    plt.plot(x, y, color='#3498db', label='y = sqrt(x)')
-                    plt.scatter([n], [raiz], color='red') # Ponto da escolha
-                    plt.annotate(f'Raiz: {raiz:.2f}', (n, raiz), xytext=(n, raiz+0.5))
-                    plt.grid(True)
-                    
-                    # Converte gráfico para HTML
-                    buf = io.BytesIO()
-                    plt.savefig(buf, format='png')
-                    img_str = 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('UTF-8')
-                    
-                    # Retorna o texto para o JS
-                    f"A raiz quadrada de {n} é {raiz:.4f}|{img_str}"
-                `);
-
-                // Separa o texto da imagem
-                const [texto, imgBase64] = resultado.split('|');
-                
-                document.getElementById("resultado-box").innerText = texto;
-                
-                // Atualiza a imagem do gráfico
-                const container = document.getElementById("plot-container");
-                container.innerHTML = `<img src="${imgBase64}" alt="Gráfico da raiz">`;
-
-            } catch (err) {
-                document.getElementById("resultado-box").innerText = "Erro: Digite um número positivo.";
+            // Chamamos a função 'calcular_e_plotar' que definimos no arquivo .py
+            const funcPython = pyodide.globals.get('calcular_e_plotar');
+            const resultado = funcPython(valor);
+    
+            const [texto, imgBase64] = resultado.split('|');
+            
+            document.getElementById("resultado-box").innerText = texto;
+            const container = document.getElementById("plot-container");
+            if(imgBase64.trim() !== "") {
+                container.innerHTML = `<img src="${imgBase64}" alt="Gráfico">`;
             }
-
-            btn.disabled = false;
-            btn.innerText = "Calcular com Python";
         }
-
+    
         init();
     </script>
 </body>
