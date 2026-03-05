@@ -1,0 +1,74 @@
+---
+layout: null
+---
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu App Python</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        #loading { color: #666; background: #f4f4f4; padding: 10px; border-radius: 5px; }
+        #plot-container img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; margin-top: 20px; }
+        .resultado { font-weight: bold; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <h1>Executando Python com Pyodide</h1>
+    
+    <div id="loading">⏳ Preparando interpretador Python e bibliotecas...</div>
+    
+    <p>Cálculo matemático: <span id="output" class="resultado">Aguardando...</span></p>
+    
+    <div id="plot-container"></div>
+
+    <script type="text/javascript">
+      async function iniciarTudo() {
+        // 1. Inicializa o Pyodide apenas UMA vez
+        let pyodide = await loadPyodide();
+        
+        // 2. Carrega pacotes necessários
+        await pyodide.loadPackage(["matplotlib", "numpy"]);
+        
+        // 3. Executa cálculo simples
+        let calculo = await pyodide.runPythonAsync(`
+            import math
+            f"A raiz quadrada de 144 é {math.sqrt(144)}"
+        `);
+        document.getElementById("output").innerText = calculo;
+
+        // 4. Gera o Gráfico
+        await pyodide.runPythonAsync(`
+            import matplotlib.pyplot as plt
+            import numpy as np
+            import io, base64
+            from js import document
+
+            x = np.linspace(0, 10, 100)
+            y = np.sin(x)
+
+            plt.figure(figsize=(6,4))
+            plt.plot(x, y, label='Seno(x)', color='#3498db')
+            plt.title('Gráfico em Tempo Real')
+            plt.grid(True)
+            
+            # Converte para base64
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png')
+            img_str = 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('UTF-8')
+            
+            img_tag = document.createElement('img')
+            img_tag.src = img_str
+            document.getElementById('plot-container').appendChild(img_tag)
+        `);
+
+        // Esconde o aviso de carregamento
+        document.getElementById("loading").style.display = "none";
+      }
+
+      iniciarTudo();
+    </script>
+</body>
+</html>
