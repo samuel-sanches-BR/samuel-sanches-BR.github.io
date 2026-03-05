@@ -433,6 +433,21 @@ layout: null
       msgEl.textContent = msg;
       msgEl.className = msg.startsWith('Erro') ? 'err' : '';
 
+      // Extrai NRMSE da mensagem e salva no histórico
+      if (!isErr) {
+        const match = msg.match(/NRMSE:\s*([\d.]+)/);
+        if (match) {
+          addToHistory({
+            neurons : parseInt(n_res),
+            sr      : parseFloat(sr).toFixed(2),
+            leak    : parseFloat(leak).toFixed(2),
+            future  : parseInt(n_future),
+            nrmse   : parseFloat(match[1]),
+            ts      : Date.now()
+          });
+        }
+      }
+      
       if (img && img.length > 50) {
         const image = document.createElement('img');
         image.src = img;
